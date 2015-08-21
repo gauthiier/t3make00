@@ -128,7 +128,7 @@ def install():
 	teensy_tools_tar.extractall(path=base_tools)
 	teensy_tools_tar.close()
 
-	print "#3 updating PATH"
+	print "#3 updating ~/.bashrc"
 
 	home = os.path.expanduser("~")
 	bashrc = os.path.join(home, ".bashrc")
@@ -140,16 +140,46 @@ def install():
 	else:
 		print "Please add " + basepath + "to your ~/.bashrc PATH"
 
+	print "done."
+
+def uninstall():	
+
+	print "#0 removing arm toolchain and teensy-tools"
+
+	shutil.rmtree(os.path.join(basepath, "tools"))
+
+	print "#1 updating ~/.bashrc"
+
+	home = os.path.expanduser("~")
+	bashrc = os.path.join(home, ".bashrc")
+
+	if os.path.exists(bashrc):
+		import fileinput
+		delete_line = "PATH=$PATH:" + basepath + "\n"
+		deleted = False
+		for l in fileinput.input(bashrc, inplace=1):
+			if l != delete_line: print l
+			else: deleted = True
+		if not deleted:
+			print "Could not update ~/.bashrc porperly.\nPlease make sure to erase " + basepath + " from your ~/.bashrc PATH"
+
+	print "done."
+
 if __name__ == '__main__':
 
 	p = OptionParser();
 	p.add_option('-i', '--install', action="store_true", help="installs t3make00 (~/.bashrc)")
+	p.add_option('-u', '--uninstall', action="store_true", help="uninstalls t3make00 (~/.bashrc)")
 	p.add_option('-p', '--project', action="store", help="name of the project (defaults to value args[0])")
 
 	options, args = p.parse_args()
 
 	if options.install:
 		install()
+		sys.exit(1)
+
+	if options.uninstall:
+		uninstall()
 		sys.exit(1)
 
 	if not options.project and len(args) == 0:
